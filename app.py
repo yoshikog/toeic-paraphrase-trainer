@@ -1,111 +1,395 @@
-{\rtf1\ansi\ansicpg1252\cocoartf2870
-\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fnil\fcharset0 Calibri;\f1\fnil\fcharset0 AppleColorEmoji;\f2\fnil\fcharset134 STSongti-SC-Regular;
-\f3\fnil\fcharset129 AppleSDGothicNeo-Regular;\f4\fnil\fcharset128 HiraMinProN-W3;\f5\fnil\fcharset0 CambriaMath;
-}
-{\colortbl;\red255\green255\blue255;\red0\green0\blue0;}
-{\*\expandedcolortbl;;\cssrgb\c0\c0\c0;}
-\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
-\deftab720
-\pard\pardeftab720\partightenfactor0
+import base64
+import html
+import json
+import random
+import re
+import zlib
 
-\f0\fs32 \cf2 \expnd0\expndtw0\kerning0
-import\'a0base64\uc0\u8232 import\'a0html\u8232 import\'a0json\u8232 import\'a0random\u8232 import\'a0re\u8232 import\'a0zlib\u8232 \u8232 import\'a0streamlit\'a0as\'a0st\u8232 \u8232 \u8232 st.set_page_config(\u8232 page_title="TOEIC Paraphrase Trainer",\u8232 page_icon="
-\f1 \uc0\u55357 \u56541 
-\f0 ",\uc0\u8232 layout="centered",\u8232 )\u8232 \u8232 # 
-\f2 \'d5\'69\'a4\'df\'c8\'a1\'a4\'ec\'a4\'bf\'86\'96\'ee\'7d\'a5\'c7\'a9\'60\'a5\'bf
-\f0 87
-\f2 \'86\'96\'a4\'f2\'88\'52\'bf\'73\'a4\'b7\'a4\'c6\'c2\'f1\'a4\'e1\'de\'7a\'a4\'f3\'a4\'c7\'a4\'a4\'a4\'de\'a4\'b9\'a1\'a3
-\f0 \uc0\u8232 # 
-\f2 \'cd\'a8\'b3\'a3\'a4\'cf\'a4\'b3\'a4\'ce\'a4\'de\'a4\'de\'ca\'b9\'a4\'a8\'a4\'de\'a4\'b9\'a1\'a3
-\f0 \uc0\u8232 DATA_B64\'a0=\'a0"""\u8232 eNqkvWu3FGW2LvhXsupUDb6sRaNV7l1lf9hDQUuqtXQItT27+0OPyMxYK0MiM3JHRK5lVo8eY13kJiAqgoWogKByUUDxglz/Sy9y\u8232 XT6dv9DzmZf3fSMzEpQa45zaCJlvREbM+3zmM/+v/+e3ZZTPx+X/vZjl7d8++9vnesPFaPjbmd+Wnbgb01+srX60tvrN2sqttZWv\u8232 1laur60eWlu+trX03fqxj0bnvh29/w3Pru3q9Wf9++Wdu/Oljd25v5+/W6dvVWL0YD5xXw2k9fFhdnlZb+frM27FY2x2vF/fuZ/48\u8232 778fmP738/3z8ue//c1/3z7rZ/f5tf3x2+96cZh2+9vF+w9PL+bdn2awGmbURSttkF5zbdP6u+mrpdv6jfjkct8u+hZQeadDJSNJ\u8232 6yo2UpenL+W3swHLOvCgsnMynTP/r3/VN2s+V7Z/59/SZZ+9vp6/7xZ9P+yvRz53mf+P58iEDzaFjRCpqRHOVPaLTw7uqxzma1f\u8232 JMHPvkw/5c4nB0OY9nzysnLZ/OakZ+OeFn9Mb4Ouz1eb8XiuTExD3FKg/WeoQS3MivI/2z1uPmdv3w5/KoGc7HZvfP5tfL3z4/f\u8232 7t//PD1288fnM3XP0PC//C3L369n5yP6Y9enpYzIZuFltuWHP38un//z1S1D/s7tcezs/4r+BLvGweIO/5b/9+PH2J5E/Oj35z9sP\u8232 Q3JJuOHzXd83T2HeKcuMAeDI859Hz++KKn4/H5+/gv/358on8f/w90eeHfvLX5+8+bqeF39/8rQ9H9AdNgeNFeH9Ei8Jx1iSSUvH0\u8232 ETeY+yCpfoLf4//fBaP5ol3NZBFm49kg9gU/Lr8fIeCDu7nf7j35er4VXDZPxbLTd83wHeFzAVyAitqjSiaKA2OXDApJkWWvNS\u8232 HNdEfOA6v1d6un4Wg55NqtF0HH+P5s8jAq2uo2HVufh5eLt5+Of8x+2r/eXPfvef4vfPFgu+S0T3vT3X2no8lnaftX0vb37Lx\u8232 58Nbe2a/jo5C3ti2ZZ5OnWhwnwHCCVdG5+FgQ4ePIGKP+ivh0eUdcyE/qJgvEViYB+5hH/c21Npb3q4w9uQTIN6uPhl/gOmQV\u8232 WaJmAA+2QTmq20hhxOTeXWp/fmn/54Jlx+uXEJyv/l+k5Mpns0xhJ9iDzZat52O8qXLjRTGb9m9LZK35aJxJszQPD5hYK+t0OI\u8232 rMFBuT9N/7uXOkYcTf+bGDn3wC3Pey+TPFMGn+qFcjT+F/eiEmyvyfV0o2bTZpjKGZ2s0qQsC0eOwyUnKphUKfZNFHlaRUrRb\u8232 CSasOqeNTR9TudXycjZzu1lOsFbN7NHFAZ6VFla0dMSn1SNoXw3/qN2HkgRYobOJFUJLxqsovTzXEOIfkKndzmgpK0jCiZMtLU\u8232 w/A+q43AmSxt8GS5Yp7LInB7ttqZWubKqpL/u0nuPwpeX7J6xvHM5fxk9Q8Vh7V/o4BZTTWju3NlU1Xj8Z5Pcz4MRdPAcsHqv\u8232 d/GYjkgkyxFggRfYWL68++/Ybvz1/0n8aHU/+ifpvU6ffF4f57P7bsmY/AAMi7/3+UPJkjkw90hgq6O+K3j0ueBnyeWKWGJSlqH\u8232 np/fzKpU2Ap0UuA0ouMkBZ2irC3AEwVJ/s69Mby1iLUd7fgusnEut57U8HscCpN5nIfBbu3v3vd/sO4fnjj+eiMgiZcLgnfE\u8232 rt5eT85/L/4lP/LPPe7tx/W7+7OV85fFfO4/Fo+9vX+3Kfs9tYgoI/Z+jxnKOM+YWw0WXGS2ww2NS18M1pS0JwoFD0gLZSxt\u8232 ViWM2pWq7oS4tYGBdrNkM0UXzjRKN30/OLUpPNniADzaSuVVP2nAFw0c7M+snnmAxiOLGKplYhDol+G9PuEMF4Q9M6D94nFEZm\u8232 hdsOBX6TzZX03dSGQwvASOD3i42RSoF6NGRMiYCJbQVhkpVkvcyV9s0MCRQJ/V63y2Wz99v+3seHtrduiUla6QEqPJ91V33j3\u8232 /eP//x9mIQV6w3qNfCK1Sukad36pVmsiipEhCzjrkqbZgAcibSvFJ1nQ6LYGBca1K6QMwlAcP+JRSP4PDGA/9bHwx9cw/KbR\u8232 7l7xucAkW1ZgcrX3eVng46RgrB2PXSXI0Cp7IXmo3RNKUcXB5NMz3F+hEFNEuIoIYJFGLxXYbOonMMYGDKWqEFL9RAbO/yT5\u8232 cd1xwIeFpcH8I0PkzNS3Qz7uV1TSUHk16eHSG00GtbSYK4RT0bpDzxAf5q/yvHcDpqqL7wSVyz/xv7+fP6eK3Rf6fnsvuP8n\u8232 C6GeTKa7buzLc8b88dGDMjAW8s5P7k9vPv9kL7WW91LInN9Z/9P3D/vvY5/rN3+xd+fD4bgP+3+2nrD1ee8eR5/l9C88nl8+i\u8232 NvH3fShF0i0Jo5OZeoECkXSipNqYSGTg79LXXHv+GIziPppKIsdi3uWA2xmByllVjiURJtbtOVqmc3WL6ZfsVy+Sh3G4fMvMxm\u8232 NWXwo1pk0D9W13SSIT2As1IKtDU93i2gD1LDl0REZ8XF4g2w4Kll9dcFu7xXi0vv99cds+xpwnEE2FsFVFi1wW71bwj7esC+c\u8232 eFr3bJkNOy1d3b3pj02/JsugM0xGPg1MUAAsBq3s0kERUfBW0b0HYxyxO4YJvGsj/GB7oT9sUlzmTNlrmXkYfHndn5ZX5LI\u8232 t+O3q9uaKgnGmRkW15E9TYP35YPNM+a6gjjNE8N6ADiaBQBJNhEKAGsVpJbcxUhEAGpVmIBxUzc3g3w7Lnk/tE/yaHt67sbN\u8232 tY3C/cv2Pknw/wPBsAz1/Phf/m7E+EKRMDf2N+G6z5dmpm9a/yUyWKXRZC6zeFbPFF2T66SBD5myeB+9lPR0SiRsZWMzEQ1\u8232 mY3ULNuaWkmFWRFS/tqizZzyHG7ohC61oTWL7CqCJjB0/9VuDiQS9i5WvTl1Eq5tcnTb0X85HHpmIgDhfoHj1s4HxUXshNis\u8232 E2WlyZpgy6tFjVARd57dBMLKKcGKBjI3mwMdu0Coqggwuz2BzQJdpMVRiWdF7hwW64HFjUAEgpOmIVFpV4JrCGdKyj7MZU+Lj\u8232 cnZtmZkvXeVb9xVLRNGDX/dy/qdd9fo/5dCqU3/u5e4FhHP24koykkoNQcLx0F5tg6hMZVImNFCy02x0MNBNDjVM70SL2JvJ\u8232 8B1j5PkVs9oNjsWah/3TmdGZsRn1CdiQsyalXqPpmW0I40Y7mAuxtgeEzndjLgSiPt0PgdmUIhsV6UhjyxiMt2PwnJw+P3gP\u8232 1g0xQcjkN0iyhxuKkts+LzpxK9HNgtIVMAUAKawBVF1RQ2qdVQjknWJihF2vd6FOv0TvQE/tp8M5b+yNYerZh1vrICy2vDcDD\u8232 k/681jsv7AI+vlVZ2pSfV6cJ5pHkL5R+0KO7qP3bx6f/mVGvaPmrY1JCqggKZs/RKl5qlEUxpfU+yo3hh4kMdLC9XzoL5264\u8232 /41D4UkhW7vIDtrsqZXnOyaPJn5+/UVQJlfpiG2VBlWbXGH0tB8crrII94OwR+jT0Ym+Y9hQM+dTBHGCj+Cm26tm+3nGJ4+\u8232 53Xn93r94c1re6fa1ZbT3F6d9EBF0cOv+o3Ik9vNeSKsiPWZJ+mIMBFlEtIsOkQfeOaRvrYe34E9t/AdSkTVdPPkJj1LXk8M\u8232 +v6/aeWbCXQdNfH8rP7l2vYf8m5/7y6+quyTT6NTXfT8qRWj44vkghayEH2eJlbzqsmy3k2nUNGHfJx9CcdtcffVpH3a+En\u8232 s4HjcHH2nmKpEr6gDden0GKiIM4ZrA81+QG1kd5QorwtTtXKwYCpW5rjgRjsJkE8VkA3FrvWhaO3q6i4+Ox8dO/vbmz+gUN\u8232 A0+qLqDwC7wd6iTVYTd2U5TWW/z9jdvDJlYn7WO91l3UwmpgDFYxpxTYvAPrCTj9CVqdGGsF4DNRYAUMs2EDk/UCIRj5K9HI\u8232 dZCmTFDmcxb2OqPDtzu8y5mE7wBmjUdYeU4onPIgtIseHJYgO0oTlw0FvVA8Wkrd0iswEI9G2bsVwa+5cE7Km/fnysQ81NH\u8232 A2jGf3woI1C3vltiJzBI9f6kL6LRan010pOCygNBXHpQJpvzp3qJoAF4uD93Y1tUsCrpcQcckOJUxCGECVRZvniiaUCw3h7W\u8232 DZdiEpwBl+guJYRwACgwx2PjSwVrczcuBZCIYb9b5tK6ODxs+PxvvF/vn2k/T9G1KfspsXtdHdOk3OoQHtdf3xW69X/rO8s1\u8232 90LY5jBMATLa0csiaM15gNcAnxMqfnk8P8wvl3ZLeG6oNhj1CtgU8x3E6fN7OfXv4+7s+bkUP0/6uZn9y5Wlx7Rx99URQeP\u8232 s3sXi3f329mEXASIsdn78+fsn8zD0xYwc7gbLQ7D49nq2tWbq0fBMiziyPTGNczgkDDi+oXLWzGX8ku31k/HMXltXrhVVw+a\u8232 3VDZ+BVkcaG1C7Vw6tKkXMwKVk6F2tBKkhP8cXc6KYGPwkbNGBXZocR4POMx39kxMa7taIXr0dK6Jhjqw+xcDlJLp5xGKJ\u8232 Yig5UmZzgUSFMmz0D60mGgNpRAE7YkCNHpsN8hJpuXb1NQMxMivdZ+5+Rlxd0D2MVYdxVuC5UwBZgm98lGkHgmQXyylfPk+\u8232 Vx85/+eQREuWH6XXcDJ6vXpndlpY1JvWuut4r8t7SMIXoQkNrSkQs77DraJYEY0Os6NY6LVvdVMebLX0AqwrAlJUoS3uU5DV\u8232 eDdM4oUoUhpJlDtDNG1IIubNK8JLTuI13pLTdaOZJ2S5NzuIWMkpspQz4nlN3LSJwziHTvDXt4uEuEvavINLkRulLYkYc4BD\u8232 dvCQHxgc93wkLkDUNwLYAWqPYGUwq53D4wF3Zje5Od7WWuX6aW0/3r+9XwHXOfnL4EBYnIyWc+vHCzdXs24tV3q32z9qXK\u8232 Mo5cC040vWBR5AetfGc7a5smi+zKYAzEn+lQW/gUZ0Oi2BgBDXO2eGB+tIWsPHI+8RqbvCQSBCojQKuJRzvdaK2J+YgSqri\u8232 c63wWHqIagAW7pUqnq/mv1HN7V+OXqoB+VAB+qbYTyD+v8/56rMoLZ5kOtUrFMZ8y87YxcsWjQn/jn+PHStwPvJFhck66zl\u8232 OOj6+9+7hdwOCvDGG/FktYESElIHCvFdSUKBmMoMFtDycw9TDhKCxTQ5ar8s8/xlbHdv3/uDw96QBhwTVnzWBwFYmt8FsDj\u8232 +89ewhj7DS3dX2L9QwukYYcFxsSUXph8T3hPZ+eZh8vkgHspxtb6+slvUs+YCpsANVJc4QZ6qhvzoRW5C5U1OcjzZUuYkYB\u8232 yd3vjTG8nKfLD3OxsncmQv2T0nfYvU+UIW8wQK0PLOhW33rzhY3bjdJtvNbXpd5OUgXczhKNkmIFtjEWGQGOsiO+cTpjCIs\u8232 /LkJlSmkMTn5aHKkbaq0dIZpwnzoY7qen60ni9W2W4zFeRU/cZQ69zQMAiYPRmERdqkpv0j+iKTbH2Cn1QLgQQjnqbGaXi\u8232 WiByXLUGNWhnXXRhL+XwRhPgNDqQcBwesgbzp8ffb9ig4OPQF+qQ/k/VfGd69/zkIgW6nOa6PeVZxQO+C35IbvOlR3Aode\u8232 6OhrrrtG/0h8DsDCiItpMY7fIcZeg3dDDgJNqXTzPJt8JrW8WC+cuOmKpzXuUfhWE3TDFtCzZCQQZxmFgAT2rvfv8q0hCl\u8232 LSZeKzaRSXdZblxKn2cMN5QHhMzksJnDQo/1elzl/pI4G//zz47sfH51dv6O1s+E8M1uF/2mt9ybx3A1fjefju7Xz1J/f\u8232 5xxR1978zc9CJEYeEdZ7ZBl23TYJUv5WwDUXME3L0Y1zXWbvI83WukRkIhAQQ3Uxxi1F/Y9EYeRhcNj5JfVeYNB7yAX3LP\u8232 G8dM9RI6SeP4gY44EQOBF0rvEypCWw23ssPBY1XOCSIfnSCIg4IGzx6+NbB7d7P/p33L7/+b//668ffwKGxKauLMh5toz5\u8232 HZ7ds55zw/fXXq/5y369t7+QMmjARyQTQN3SffOtwKEXNGrVMKrUdc1BU71sRg+tFGmcvdAzFk3FF9YaSYzeu2ldp72FszM\u8232 Er/oeAvjpx2RNhwbTHicMPlCHM7kLGmbQtwJTlO1cUxStVA1TvqJpUCv7UFGDrbwMqvzYFHo1QaX8xVqLtaRgd7PvV8nX1\u8232 D4oW3tkr8kGktvuSB1JywfNnFx5O3RdNIF6IHwuXM7FjfWzJr/gSQMVSjHHBr8tzEJJ9APHE64TGYGdfFQ0MRjQc40K9xQ\u8232 yXPTx9TSThzmFfv5ueDdshGgQUC8U1AeBZgQ/Qe0pIi0Y68s6fM37m8fr6j+3+//19cfVuCdTKAgxwmXSSZUK2NpJDrlzA\u8232 yW+q5p0j1UZ06EC/rxSHgvqKGgdDh2iCeOk3wa47BH5dJHTx/Tt/wmtPNJnpHdzey5Fd/Aal/EHKEPk66QyLKf2Awnh6M\u8232 pGFYfo+X12k7PCu17opxq/UUZqjpef3G/pqX13bb/z3//1+Osr2WZP2eSptIrbw9kGqLOcGgxba/lmWpnWsEsS/nhKJ1m\u8232 ZlvWNz0jso8bEzURtwaGfOzFTS+h2JBKChV64EEgiATMVJa6PobSJLo8v9LxPiAyQRcQQVNBFyXRFuSGF9d4pl+Ndlfwjx\u8232 7ePxVS6AJszjThQs2DiIcPSjHyzJ4JBumadOfMnMFOZGFGWvkHe6JS1XVl7ZE5sEVgErcaHrF0rJcnTlwzobzPe0LEAxac7\u8232 Tf2xzOjM2Iz4wHj4VUh4sn8hACbo1XnqmWWppBzkkFoGG0JXyLKSCdm/NrK0S+UDIlPZkQPlphJt74Dq+6JjM6cuuWTtLx\u8232 UzKILSTl1R4MUyG1hWlAOdj16q/XWOgb7IUmXKbJTnF+bWmJXlxrPvcs62nvpm+cokL7btljoXM5/xq1vaCzZ35Q7doC70\u8232 RCxWpC+7gCxsWpKb4Ycvj0kE8A6Vl+EDTLaUHLcXmKjzDdqlCdy6lpMsQ6NfKU4g7YvgwHXtqNz7Azlww6nL4ViVxi6StB\u8232 TLmLVLdCyuREUmU/1UHRHmJy53bqSaW1TZnGbqtNOj0/wt7NmdXf5Odwxnn7I8j+rmk9eZoc8CwcogWNXZnWtRi9NuQ51q\u8232 9u2KDjegD0C+WUnEKiL5tQ0Zp6Q3DS1hK+PrpHfG+sIykU3a7N7XFh6YokZKTK5lURN6RmNeFcVtRfjaPTG4D4s4HdGfWM\u8232 MDVEUqDUvxMgWJuWakZlsiegg/uyOvzLSFtKexPzb8+gcM5zQOHi8s4S17u1VOSlDIuNzEkHOyxgPWiIjWMH/vRQAwmUS\u8232 A9q3WcDsgt57NGGHYKEVC6kACMyXycj0ZItwpIx+KcfbI+SV9Qg2qAWVzvcEDn88PwKea6O0bwZKrzdJZNjRl7tc7RkcQ\u8232 H5U51nPRGWJNW1n7mofAVlH0yF7TE6wILURoyBUw0qlz2yW+VzdU6uzxs9hufSRrY6KTxobkfzcttA8BR5fnOox5gkcTi\u8232 5DYLGhNL35dHnZijSE7ra1NhIAuY0R6+i4WbfUsZGa6u2V17Z5/EvXK6cK3PdBP02t6+YZDKrpVF1GTxF85cAPF1D/1k\u8232 O46Gw/PLzNWn/HFjst6Cv9GV5tw31YOtEnQb0Wgta8Iy+/eMqJDyLQxwc3uyHh6kt46npw+TaKScoqPrk7msK7I1W2he3\u8232 NIkiN3hr3fCoYjoiGQFvLr+gfl1x2eWA7VInuqeNozvk9m9lnREJeDdwQr5R2hXxsrCrh0UFgJEsn3Q3YWWxjpJoH2WXi\u8232 6+yj1BaeCL99da27hR3l79pcZXe+lxzgjhKB+2sNw40O7h8M1dU9HBCr2wyeAiMBHXwKM4xriV90o1wgpJahh6uBFzBk5\u8232 /L9BPeOu8xN+JCe/prlTiPhg/gkOV4y+4vaJa7uWVxmnMYw73u4/F59qV8y3Ng3XTxbMYDsJS4MJsJdI6j1QtFB0NSQR6Y\u8232 V8T0//cThxFX6kB7mZutjXyQnz7Zs4Hdku3SRit00vRylU93LsrH7VhNymp5f3bX1o50+nn6HQkY7aBQdQqcWmSB+eWVb\u8232 FAvYDOZqmZsOYtjEfkHYxH7nwztsY3dv330NaED3kbyhAkFkkSUfOJHYWD4LH8kEEjv+BqKK8a4EosshhI1TkczP8u6pM\u8232 vGVz9cd1tRgd2X3hOC9FSWVPZ77ljvrjuFNzowH76f3u5Fr+v+3sN6UJd66zgPmXGzQODjg7eG/EyMHkgZgcZxPz8+/uH\u8232 z8+v/9GGPY+XMXPfuT9VFn2VhspRa4bJgAC8vNhfFk57KkvnALJ5Z+FNdJxp93UoSd2wLpYH7aLeWq/6jopBQ2dBKSErI\u8232 DqDBxG0LNWVKDNlsbeKPtumxZXeNW+V4sXA91vyBZQ47WveD3BUsmlPNnk10zmspmMythvy8ctwAzALQvvFd7IDMUgTvFi\u8232 VUPfTZlxYkYVdK+54rgp4tVryQc0GJbeFNrRp72rhzBN+lYza18WS77vZXaeHuPS42N03IgUzYz3JC1xCQkd5FBkw8jzN\u8232 qH9x9/0l/g+y48e/bixHEsydwzUiBwA8dWYBNhZi48aKHxhlc1Th9cxyNQYNRjJQ67I3M8tELq9WHyk1jf9wsu4W9O6dF\u8232 0JVI9uhrPy/7rsPqwyjF6xfwBRsn+Oq259kGsmuF0a3PDGMPhLqdtHUt1P8ruKVbMaw35/XQm8x0eu0XUkQ9kYsQwAuHq\u8232 Sx8ZrdIFg4blGtgVUT0CD9BNDB3CGg+G5yQXuWLj6mbH5pSiVZq0cRyvMV4f1ysWT7Rki2/UTlv3znL0n/vHohJIe3t53\u8232 u1bJozQem3Hn8/CrWJj4UJQ2KhSbZyU3Bs4YLtqmsmHdMEyOepnqUbRz9SD6YOCh86UF59ExbBgZdtLw8xo7sH60d9P\u8232 owOSYN2jBZgJePQrI3n5L84eePk1mYujSz3XgAPSU6yij+mN+0mL8Z/VewVfr9b3qnBixxdr6a3I+jC0vWp+JG0LqjU\u8232 CkcbsxwrMWVoYHM2Pqi0FGmc/dIwkkGEyg94wXkw+paewY39dJjUgVjXs1SS7bLQDoC5u2CThFiurLVbLfzwfT/Gz8c9\u8232 sf23zxd/TFUf96+JEgxJ/az35+y4Y6PvbwlB69Z6DL7s3u1/m1bt9dPXvbt/cn537Hd5//l2sf0f51U5v8n8s5KPLMs+\u8232 q5bB8e9BkZjr6ePhD4/F4lvRhYjvRNyMx2x3Lq5OdFBN//vrN+sV8v2+b+//V3e8+2eflvm+w9dPLr8cQ0eOv376Psj+\u8232 fXzJXw6F4rmYqbm5uTn+J1mxNrc=\u8232 """\u8232 \u8232 QUESTION_DATA\'a0=\'a0json.loads(\u8232 zlib.decompress(base64.b64decode(DATA_B64)).decode("utf-8")\u8232 )\u8232 \u8232 \u8232 st.markdown("""\u8232 <style>\u8232 .stApp \{\u8232 background-color: #fcfaf7;\u8232 color: #2d2a26;\u8232 \}\u8232 .main-title \{\u8232 color: #c2410c;\u8232 font-weight: 800;\u8232 \}\u8232 .toeic-passage-box \{\u8232 background-color: #f3ede4;\u8232 border: 2px solid #d97706;\u8232 padding: 24px;\u8232 border-radius: 12px;\u8232 line-height: 1.9;\u8232 font-size: 1.08rem;\u8232 color: #1e1b18;\u8232 white-space: pre-wrap;\u8232 margin: 16px 0 20px 0;\u8232 box-shadow: 0 4px 18px rgba(180, 160, 140, 0.18);\u8232 \}\u8232 .badge \{\u8232 background-color: #ea580c;\u8232 color: white;\u8232 padding: 8px 14px;\u8232 border-radius: 6px;\u8232 font-weight: bold;\u8232 display: inline-block;\u8232 margin: 6px 0 12px 0;\u8232 \}\u8232 .pattern-box \{\u8232 background-color: #fff7ed;\u8232 border-left: 6px solid #ea580c;\u8232 padding: 14px 16px;\u8232 border-radius: 8px;\u8232 margin: 12px 0;\u8232 \}\u8232 .small-note \{\u8232 color: #6b5b4b;\u8232 font-size: 0.92rem;\u8232 \}\u8232 </style>\u8232 """,\'a0unsafe_allow_html=True)\u8232 \u8232 \u8232 PHRASAL_VERBS\'a0=\'a0\{\u8232 "sign up",\'a0"take part in",\'a0"carry out",\'a0"set up",\'a0"look for",\u8232 "find out",\'a0"go over",\'a0"turn down",\'a0"pick up",\'a0"drop off",\u8232 "reach out",\'a0"follow up",\'a0"check out",\'a0"work out",\'a0"stand out to",\u8232 \}\u8232 \u8232 BUSINESS_WORDS\'a0=\'a0\{\u8232 "invoice",\'a0"shipment",\'a0"department",\'a0"division",\'a0"policy",\'a0"guidelines",\u8232 "procedure",\'a0"warranty",\'a0"guarantee",\'a0"conference",\'a0"convention",\'a0"budget",\u8232 "authorize",\'a0"reimbursement",\'a0"deadline",\'a0"due date",\'a0"vendor",\'a0"supplier",\u8232 "representative",\'a0"packaging",\'a0"property",\'a0"extension",\'a0"merchandise",\u8232 "assistance",\'a0"laboratory",\'a0"lease payment",\'a0"local office",\'a0"market launch",\u8232 "staffing division",\'a0"publications supervisor",\'a0"internal message",\u8232 \}\u8232 \u8232 FORMAL_CASUAL_PAIRS\'a0=\'a0\{\u8232 ("purchase",\'a0"buy"),\u8232 ("inform",\'a0"tell"),\u8232 ("notify",\'a0"tell"),\u8232 ("provide",\'a0"give"),\u8232 ("provide",\'a0"give us your feedback"),\u8232 ("assist",\'a0"help"),\u8232 ("assistance",\'a0"help"),\u8232 ("require",\'a0"need"),\u8232 ("obtain",\'a0"get"),\u8232 ("commence",\'a0"start"),\u8232 ("terminate",\'a0"end"),\u8232 ("approximately",\'a0"about"),\u8232 ("inquire",\'a0"ask"),\u8232 ("reserve",\'a0"book"),\u8232 \}\u8232 \u8232 \u8232 def\'a0normalize_text(text:\'a0str) ->\'a0str:\u8232 text\'a0=\'a0text.lower().strip()\u8232 text\'a0=\'a0re.sub(r"[^a-z0-9\\s]",\'a0"",\'a0text)\u8232 text\'a0=\'a0re.sub(r"\\s+",\'a0" ",\'a0text)\u8232 return\'a0text\u8232 \u8232 \u8232 def\'a0classify_paraphrase(target_word:\'a0str,\'a0paraphrased_word:\'a0str):\u8232 target\'a0=\'a0normalize_text(target_word)\u8232 para\'a0=\'a0normalize_text(paraphrased_word)\u8232 \u8232 if\'a0para\'a0in\'a0\{normalize_text(x)\'a0for\'a0x\'a0in\'a0PHRASAL_VERBS\}:\u8232 return\'a0(\u8232 "
-\f2 \'be\'e4\'84\'d3\'d4\'7e
-\f0 ",\uc0\u8232 "
-\f2 \'84\'d3\'d4\'7e\'a3\'ab\'c7\'b0\'d6\'c3\'d4\'7e
-\f3 \uc0\u12539 
-\f2 \'b8\'b1\'d4\'7e\'a4\'ce\'d0\'ce\'a4\'c7\'d1\'d4\'a4\'a4\'93\'51\'a4\'a8\'a4\'e9\'a4\'ec\'a4\'c6\'a4\'a4\'a4\'de\'a4\'b9\'a1\'a3
-\f0 TOEIC
-\f4 \'82\'c5\'82\'cd\'81\'41\'90\'dd\'96\'e2\'82\'cc
-\f0 1
-\f4 \'8c\'ea\'82\'aa\'96\'7b\'95\'b6\'82\'c5\'82\'cd\'8b\'e5\'93\'ae\'8e\'8c\'82\'c9\'82\'c8\'82\'e9\'82\'b1\'82\'c6\'82\'aa\'82\'a0\'82\'e8\'82\'dc\'82\'b7\'81\'42
-\f0 ",\uc0\u8232 )\u8232 \u8232 if\'a0(target,\'a0para)\'a0in\'a0\{(normalize_text(a),\'a0normalize_text(b))\'a0for\'a0a,\'a0b\'a0in\'a0FORMAL_CASUAL_PAIRS\}:\u8232 return\'a0(\u8232 "
-\f2 \'a5\'d5\'a5\'a9\'a9\'60\'a5\'de\'a5\'eb
-\f5 \uc0\u8660 
-\f2 \'a5\'ab\'a5\'b8\'a5\'e5\'a5\'a2\'a5\'eb
-\f0 ",\uc0\u8232 "
-\f2 \'d4\'4f\'86\'96\'a4\'c7\'a4\'cf\'a4\'e4\'a4\'e4\'a5\'d5\'a5\'a9\'a9\'60\'a5\'de\'a5\'eb\'a4\'ca\'d5\'5a\'a1\'a2\'b1\'be\'ce\'c4\'a4\'c7\'a4\'cf\'c8\'d5\'b3\'a3\'b5\'c4\'a4\'c7\'a4\'e4\'a4\'b5\'a4\'b7\'a4\'a4\'d5\'5a\'a4\'cb\'d1\'d4\'a4\'a4\'93\'51\'a4\'a8\'a4\'e9\'a4\'ec\'a4\'c6\'a4\'a4\'a4\'de\'a4\'b9\'a1\'a3
-\f0 ",\uc0\u8232 )\u8232 \u8232 if\'a0target\'a0in\'a0\{normalize_text(x)\'a0for\'a0x\'a0in\'a0BUSINESS_WORDS\}\'a0or\'a0para\'a0in\'a0\{normalize_text(x)\'a0for\'a0x\'a0inBUSINESS_WORDS\}:\u8232 return\'a0(\u8232 "
-\f2 \'a5\'d3\'a5\'b8\'a5\'cd\'a5\'b9\'b1\'ed\'ac\'46
-\f0 ",\uc0\u8232 "
-\f2 \'bb\'e1\'c9\'e7
-\f3 \uc0\u12539 
-\f2 \'bb\'e1\'d7\'68
-\f3 \uc0\u12539 
-\f2 \'d5\'88\'c7\'f3
-\f3 \uc0\u12539 
-\f2 \'d2\'8e\'b6\'a8
-\f3 \uc0\u12539 
-\f2 \'c5\'e4\'cb\'cd\'a4\'ca\'a4\'c9\'a1\'a2
-\f0 TOEIC
-\f2 \'a4\'ce\'a5\'d3\'a5\'b8\'a5\'cd\'a5\'b9\'ce\'c4\'95\'f8\'a4\'c7\'a4\'e8\'a4\'af\'ca\'b9\'a4\'ef\'a4\'ec\'a4\'eb\'b1\'ed\'ac\'46\'a4\'c7\'a4\'b9\'a1\'a3
-\f0 ",\uc0\u8232 )\u8232 \u8232 return\'a0(\u8232 "
-\f4 \'93\'af\'8b\'60\'8c\'ea
-\f0 ",\uc0\u8232 "
-\f4 \'82\'d9\'82\'da\'93\'af\'82\'b6\'88\'d3\'96\'a1\'82\'f0\'8e\'9d\'82\'c2\'8c\'ea\'82\'c9\'8c\'be\'82\'a2\'8a\'b7\'82\'a6\'82\'e7\'82\'ea\'82\'c4\'82\'a2\'82\'dc\'82\'b7\'81\'42
-\f0 TOEIC
-\f4 \'82\'c5\'82\'cd\'81\'41\'90\'dd\'96\'e2\'82\'c6\'96\'7b\'95\'b6\'82\'c5\'93\'af\'82\'b6\'8c\'ea\'82\'aa\'8e\'67\'82\'ed\'82\'ea\'82\'c8\'82\'a2\'82\'b1\'82\'c6\'82\'aa\'91\'bd\'82\'a2\'82\'c5\'82\'b7\'81\'42
-\f0 ",\uc0\u8232 )\u8232 \u8232 \u8232 def\'a0init_state():\u8232 defaults\'a0=\'a0\{\u8232 "started":\'a0False,\u8232 "current_score":\'a0400,\u8232 "target_score":\'a0600,\u8232 "correct_count":\'a00,\u8232 "total_count":\'a00,\u8232 "answered":\'a0False,\u8232 "last_result":\'a0None,\u8232 "current_question":\'a0None,\u8232 "seen_indices": [],\u8232 \}\u8232 for\'a0key,\'a0value\'a0in\'a0defaults.items():\u8232 if\'a0key\'a0not\'a0in\'a0st.session_state:\u8232 st.session_state[key]\'a0=\'a0value\u8232 \u8232 \u8232 def\'a0choose_question():\u8232 if\'a0len(st.session_state.seen_indices)\'a0>=\'a0len(QUESTION_DATA):\u8232 st.session_state.seen_indices\'a0=\'a0[]\u8232 \u8232 available\'a0=\'a0[i\'a0for\'a0i\'a0in\'a0range(len(QUESTION_DATA))\'a0if\'a0i\'a0not\'a0in\'a0st.session_state.seen_indices]\u8232 idx\'a0=\'a0random.choice(available)\u8232 st.session_state.seen_indices.append(idx)\u8232 st.session_state.current_question\'a0=\'a0QUESTION_DATA[idx]\u8232 st.session_state.answered\'a0=\'a0False\u8232 st.session_state.last_result\'a0=\'a0None\u8232 st.session_state.answer_text\'a0=\'a0""\u8232 \u8232 \u8232 init_state()\u8232 \u8232 \u8232 if\'a0not\'a0st.session_state.started:\u8232 st.markdown("<h1 class='main-title'>TOEIC Paraphrase Trainer</h1>",\'a0unsafe_allow_html=True)\u8232 st.write("TOEIC600
-\f4 \'93\'5f\'82\'f0\'96\'da\'8e\'77\'82\'b7\'8a\'77\'8f\'4b\'8e\'d2\'8c\'fc\'82\'af\'82\'cc\'81\'41\'8c\'be\'82\'a2\'8a\'b7\'82\'a6\'95\'5c\'8c\'bb\'82\'f0\'92\'54\'82\'b7\'83\'67\'83\'8c\'81\'5b\'83\'6a\'83\'93\'83\'4f\'82\'c5\'82\'b7\'81\'42
-\f0 ")\uc0\u8232 st.markdown(f"<p class='small-note'>
-\f4 \'8c\'bb\'8d\'dd\'97\'98\'97\'70\'82\'c5\'82\'ab\'82\'e9\'96\'e2\'91\'e8\'90\'94\'81\'46
-\f0 \{len(QUESTION_DATA)\}
-\f4 \'96\'e2
-\f0 </p>",\'a0unsafe_allow_html=True)\uc0\u8232 \u8232 current_score\'a0=\'a0st.number_input(\u8232 "
-\f4 \'8c\'bb\'8d\'dd\'82\'cc
-\f0 TOEIC
-\f4 \'83\'58\'83\'52\'83\'41\'82\'f0\'93\'fc\'97\'cd\'82\'b5\'82\'c4\'82\'ad\'82\'be\'82\'b3\'82\'a2
-\f0 ",\uc0\u8232 min_value=0,\u8232 max_value=990,\u8232 value=400,\u8232 step=10,\u8232 )\u8232 \u8232 target_score\'a0=\'a0st.selectbox(\u8232 "
-\f4 \'96\'da\'95\'57\'83\'58\'83\'52\'83\'41\'82\'f0\'91\'49\'91\'f0\'82\'b5\'82\'c4\'82\'ad\'82\'be\'82\'b3\'82\'a2
-\f0 ",\uc0\u8232 [500,\'a0600,\'a0730,\'a0860],\u8232 index=1,\u8232 )\u8232 \u8232 if\'a0st.button("
-\f4 \'8a\'77\'8f\'4b\'82\'f0\'8a\'4a\'8e\'6e\'82\'b7\'82\'e9
-\f0 ",\'a0type="primary"):\uc0\u8232 st.session_state.current_score\'a0=\'a0current_score\u8232 st.session_state.target_score\'a0=\'a0target_score\u8232 st.session_state.started\'a0=\'a0True\u8232 st.session_state.correct_count\'a0=\'a00\u8232 st.session_state.total_count\'a0=\'a00\u8232 st.session_state.seen_indices\'a0=\'a0[]\u8232 choose_question()\u8232 st.rerun()\u8232 \u8232 st.stop()\u8232 \u8232 \u8232 if\'a0st.session_state.current_question\'a0is\'a0None:\u8232 choose_question()\u8232 \u8232 q\'a0=\'a0st.session_state.current_question\u8232 \u8232 st.markdown("<h1 class='main-title'>TOEIC Paraphrase Trainer</h1>",\'a0unsafe_allow_html=True)\u8232 \u8232 col1,\'a0col2,\'a0col3\'a0=\'a0st.columns(3)\u8232 col1.metric("
-\f4 \'8c\'bb\'8d\'dd\'83\'58\'83\'52\'83\'41
-\f0 ",\'a0f"\{st.session_state.current_score\}
-\f4 \'93\'5f
-\f0 ")\uc0\u8232 col2.metric("
-\f4 \'96\'da\'95\'57\'83\'58\'83\'52\'83\'41
-\f0 ",\'a0f"\{st.session_state.target_score\}
-\f4 \'93\'5f
-\f0 ")\uc0\u8232 col3.metric("
-\f4 \'90\'b3\'93\'9a\'90\'94
-\f0 ",\'a0f"\{st.session_state.correct_count\}\'a0/\'a0\{st.session_state.total_count\}")\uc0\u8232 \u8232 st.markdown("<div class='badge'>TOEIC600
-\f4 \'93\'5f\'82\'f0\'96\'da\'8e\'77\'82\'b7\'83\'8c\'83\'78\'83\'8b
-\f0 </div>",\'a0unsafe_allow_html=True)\uc0\u8232 \u8232 st.subheader(f"Target Word:\'a0\{q['target_word']\}")\u8232 st.caption(f"
-\f4 \'83\'65\'81\'5b\'83\'7d\'81\'46
-\f0 \{q.get('theme',\'a0'No theme')\}")\uc0\u8232 \u8232 if\'a0st.session_state.current_score\'a0<\'a0500\'a0and\'a0not\'a0st.session_state.answered:\u8232 first_letter\'a0=\'a0q["paraphrased_word"][0]\u8232 st.info(\u8232 f"
-\f4 \'83\'71\'83\'93\'83\'67\'81\'46\'96\'7b\'95\'b6\'92\'86\'82\'c9\'81\'75
-\f0 \{first_letter\}
-\f4 \'81\'76\'82\'a9\'82\'e7\'8e\'6e\'82\'dc\'82\'e9\'81\'41\'81\'75
-\f0 \{q['target_word']\}
-\f4 \'81\'76\'82\'c6\'8e\'97\'82\'bd\'88\'d3\'96\'a1\'82\'cc\'95\'5c\'8c\'bb\'82\'aa\'82\'a0\'82\'e8\'82\'dc\'82\'b7\'81\'42
-\f0 "\uc0\u8232 )\u8232 \u8232 safe_passage\'a0=\'a0html.escape(q["passage"])\u8232 st.markdown(f"<div class='toeic-passage-box'>\{safe_passage\}</div>",\'a0unsafe_allow_html=True)\u8232 \u8232 st.write("### Question")\u8232 st.write(q["question"])\u8232 \u8232 answer\'a0=\'a0st.text_input(\u8232 "
-\f4 \'96\'7b\'95\'b6\'92\'86\'82\'cc\'8c\'be\'82\'a2\'8a\'b7\'82\'a6\'95\'5c\'8c\'bb\'82\'f0\'93\'fc\'97\'cd\'82\'b5\'82\'c4\'82\'ad\'82\'be\'82\'b3\'82\'a2
-\f0 ",\uc0\u8232 key="answer_text",\u8232 disabled=st.session_state.answered,\u8232 )\u8232 \u8232 col_a,\'a0col_b,\'a0col_c\'a0=\'a0st.columns([1.2,\'a01.2,\'a01])\u8232 \u8232 with\'a0col_a:\u8232 check_clicked\'a0=\'a0st.button("
-\f4 \'93\'9a\'82\'a6\'8d\'87\'82\'ed\'82\'b9
-\f0 ",\'a0disabled=st.session_state.answered,\'a0type="primary")\uc0\u8232 \u8232 with\'a0col_b:\u8232 next_clicked\'a0=\'a0st.button("
-\f4 \'8e\'9f\'82\'cc\'96\'e2\'91\'e8\'82\'d6
-\f0 ")\uc0\u8232 \u8232 with\'a0col_c:\u8232 reset_clicked\'a0=\'a0st.button("
-\f4 \'8d\'c5\'8f\'89\'82\'c9\'96\'df\'82\'e9
-\f0 ")\uc0\u8232 \u8232 if\'a0check_clicked:\u8232 if\'a0not\'a0answer.strip():\u8232 st.warning("
-\f4 \'89\'f0\'93\'9a\'82\'f0\'93\'fc\'97\'cd\'82\'b5\'82\'c4\'82\'ad\'82\'be\'82\'b3\'82\'a2\'81\'42
-\f0 ")\uc0\u8232 else:\u8232 st.session_state.total_count\'a0+=\'a01\u8232 correct_answer\'a0=\'a0normalize_text(q["paraphrased_word"])\u8232 user_answer\'a0=\'a0normalize_text(answer)\u8232 is_correct\'a0=\'a0user_answer\'a0==\'a0correct_answer\u8232 \u8232 if\'a0is_correct:\u8232 st.session_state.correct_count\'a0+=\'a01\u8232 \u8232 st.session_state.answered\'a0=\'a0True\u8232 st.session_state.last_result\'a0=\'a0is_correct\u8232 st.rerun()\u8232 \u8232 if\'a0next_clicked:\u8232 choose_question()\u8232 st.rerun()\u8232 \u8232 if\'a0reset_clicked:\u8232 for\'a0key\'a0in\'a0list(st.session_state.keys()):\u8232 del\'a0st.session_state[key]\u8232 st.rerun()\u8232 \u8232 if\'a0st.session_state.answered:\u8232 if\'a0st.session_state.last_result:\u8232 st.success("
-\f4 \'90\'b3\'89\'f0\'82\'c5\'82\'b7\'81\'49
-\f0 ")\uc0\u8232 else:\u8232 st.error("
-\f4 \'95\'73\'90\'b3\'89\'f0\'82\'c5\'82\'b7\'81\'42
-\f0 ")\uc0\u8232 \u8232 pattern,\'a0pattern_explanation\'a0=\'a0classify_paraphrase(q["target_word"],\'a0q["paraphrased_word"])\u8232 \u8232 st.write(f"
-\f4 \'90\'b3\'89\'f0\'81\'46
-\f0 **\{q['paraphrased_word']\}**")\uc0\u8232 st.markdown(\u8232 f"""\u8232 <div class='pattern-box'>\u8232 <strong>
-\f4 \'8c\'be\'82\'a2\'8a\'b7\'82\'a6\'83\'70\'83\'5e\'81\'5b\'83\'93\'81\'46
-\f0 \{html.escape(pattern)\}</strong><br>\uc0\u8232 \{html.escape(pattern_explanation)\}\u8232 </div>\u8232 """,\u8232 unsafe_allow_html=True,\u8232 )\u8232 st.info(q["explanation"])\u8232 \u8232 st.markdown("---")\u8232 st.caption("
-\f4 \'96\'e2\'91\'e8\'82\'cd\'83\'89\'83\'93\'83\'5f\'83\'80\'82\'c9\'95\'5c\'8e\'a6\'82\'b3\'82\'ea\'82\'dc\'82\'b7\'81\'42\'91\'53\'96\'e2\'82\'aa\'88\'ea\'8f\'84\'82\'b7\'82\'e9\'82\'c6\'81\'41\'8d\'c4\'82\'d1\'83\'89\'83\'93\'83\'5f\'83\'80\'8f\'6f\'91\'e8\'82\'b3\'82\'ea\'82\'dc\'82\'b7\'81\'42
-\f0 ")\
+import streamlit as st
+
+
+st.set_page_config(
+    page_title="TOEIC Paraphrase Trainer",
+    page_icon="📝",
+    layout="centered",
+)
+
+# 読み取れた問題データ87問を圧縮して埋め込んでいます。
+# 通常はこのまま使えます。
+DATA_B64 = """
+eNqkvWu3FGW2LvhXsupUDb6sRaNV7l1lf9hDQUuqtXQItT27+0OPyMxYK0MiM3JHRK5lVo8eY13kJiAqgoWogKByUUDxglz/Sy9y
+XT6dv9DzmZf3fSMzEpQa45zaCJlvREbM+3zmM/+v/+e3ZZTPx+X/vZjl7d8++9vnesPFaPjbmd+Wnbgb01+srX60tvrN2sqttZWv
+1laur60eWlu+trX03fqxj0bnvh29/w3Pru3q9Wf9++Wdu/Oljd25v5+/W6dvVWL0YD5xXw2k9fFhdnlZb+frM27FY2x2vF/fuZ/48
+778fmP738/3z8ue//c1/3z7rZ/f5tf3x2+96cZh2+9vF+w9PL+bdn2awGmbURSttkF5zbdP6u+mrpdv6jfjkct8u+hZQeadDJSNJ
+6yo2UpenL+W3swHLOvCgsnMynTP/r3/VN2s+V7Z/59/SZZ+9vp6/7xZ9P+yvRz53mf+P58iEDzaFjRCpqRHOVPaLTw7uqxzma1f
+JMHPvkw/5c4nB0OY9nzysnLZ/OakZ+OeFn9Mb4Ouz1eb8XiuTExD3FKg/WeoQS3MivI/2z1uPmdv3w5/KoGc7HZvfP5tfL3z4/f
+7t//PD1288fnM3XP0PC//C3L369n5yP6Y9enpYzIZuFltuWHP38un//z1S1D/s7tcezs/4r+BLvGweIO/5b/9+PH2J5E/Oj35z9sP
+Q3JJuOHzXd83T2HeKcuMAeDI859Hz++KKn4/H5+/gv/358on8f/w90eeHfvLX5+8+bqeF39/8rQ9H9AdNgeNFeH9Ei8Jx1iSSUvH0
+ETeY+yCpfoLf4//fBaP5ol3NZBFm49kg9gU/Lr8fIeCDu7nf7j35er4VXDZPxbLTd83wHeFzAVyAitqjSiaKA2OXDApJkWWvNS
+HNdEfOA6v1d6un4Wg55NqtF0HH+P5s8jAq2uo2HVufh5eLt5+Of8x+2r/eXPfvef4vfPFgu+S0T3vT3X2no8lnaftX0vb37Lx
+58Nbe2a/jo5C3ti2ZZ5OnWhwnwHCCVdG5+FgQ4ePIGKP+ivh0eUdcyE/qJgvEViYB+5hH/c21Npb3q4w9uQTIN6uPhl/gOmQV
+WaJmAA+2QTmq20hhxOTeXWp/fmn/54Jlx+uXEJyv/l+k5Mpns0xhJ9iDzZat52O8qXLjRTGb9m9LZK35aJxJszQPD5hYK+t0OI
+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
+fXzJXw6F4rmYqbm5uTn+J1mxNrc=
+"""
+
+QUESTION_DATA = json.loads(
+    zlib.decompress(base64.b64decode(DATA_B64)).decode("utf-8")
+)
+
+
+st.markdown("""
+<style>
+.stApp {
+    background-color: #fcfaf7;
+    color: #2d2a26;
 }
+.main-title {
+    color: #c2410c;
+    font-weight: 800;
+}
+.toeic-passage-box {
+    background-color: #f3ede4;
+    border: 2px solid #d97706;
+    padding: 24px;
+    border-radius: 12px;
+    line-height: 1.9;
+    font-size: 1.08rem;
+    color: #1e1b18;
+    white-space: pre-wrap;
+    margin: 16px 0 20px 0;
+    box-shadow: 0 4px 18px rgba(180, 160, 140, 0.18);
+}
+.badge {
+    background-color: #ea580c;
+    color: white;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-weight: bold;
+    display: inline-block;
+    margin: 6px 0 12px 0;
+}
+.pattern-box {
+    background-color: #fff7ed;
+    border-left: 6px solid #ea580c;
+    padding: 14px 16px;
+    border-radius: 8px;
+    margin: 12px 0;
+}
+.small-note {
+    color: #6b5b4b;
+    font-size: 0.92rem;
+}
+</style>
+""", unsafe_allow_html=True)
+
+
+PHRASAL_VERBS = {
+    "sign up", "take part in", "carry out", "set up", "look for",
+    "find out", "go over", "turn down", "pick up", "drop off",
+    "reach out", "follow up", "check out", "work out", "stand out to",
+}
+
+BUSINESS_WORDS = {
+    "invoice", "shipment", "department", "division", "policy", "guidelines",
+    "procedure", "warranty", "guarantee", "conference", "convention", "budget",
+    "authorize", "reimbursement", "deadline", "due date", "vendor", "supplier",
+    "representative", "packaging", "property", "extension", "merchandise",
+    "assistance", "laboratory", "lease payment", "local office", "market launch",
+    "staffing division", "publications supervisor", "internal message",
+}
+
+FORMAL_CASUAL_PAIRS = {
+    ("purchase", "buy"),
+    ("inform", "tell"),
+    ("notify", "tell"),
+    ("provide", "give"),
+    ("provide", "give us your feedback"),
+    ("assist", "help"),
+    ("assistance", "help"),
+    ("require", "need"),
+    ("obtain", "get"),
+    ("commence", "start"),
+    ("terminate", "end"),
+    ("approximately", "about"),
+    ("inquire", "ask"),
+    ("reserve", "book"),
+}
+
+
+def normalize_text(text: str) -> str:
+    text = text.lower().strip()
+    text = re.sub(r"[^a-z0-9\s]", "", text)
+    text = re.sub(r"\s+", " ", text)
+    return text
+
+
+def classify_paraphrase(target_word: str, paraphrased_word: str):
+    target = normalize_text(target_word)
+    para = normalize_text(paraphrased_word)
+
+    if para in {normalize_text(x) for x in PHRASAL_VERBS}:
+        return (
+            "句動詞",
+            "動詞＋前置詞・副詞の形で言い換えられています。TOEICでは、設問の1語が本文では句動詞になることがあります。",
+        )
+
+    if (target, para) in {(normalize_text(a), normalize_text(b)) for a, b in FORMAL_CASUAL_PAIRS}:
+        return (
+            "フォーマル⇔カジュアル",
+            "設問ではややフォーマルな語、本文では日常的でやさしい語に言い換えられています。",
+        )
+
+    if target in {normalize_text(x) for x in BUSINESS_WORDS} or para in {normalize_text(x) for x in BUSINESS_WORDS}:
+        return (
+            "ビジネス表現",
+            "会社・会議・請求・規定・配送など、TOEICのビジネス文書でよく使われる表現です。",
+        )
+
+    return (
+        "同義語",
+        "ほぼ同じ意味を持つ語に言い換えられています。TOEICでは、設問と本文で同じ語が使われないことが多いです。",
+    )
+
+
+def init_state():
+    defaults = {
+        "started": False,
+        "current_score": 400,
+        "target_score": 600,
+        "correct_count": 0,
+        "total_count": 0,
+        "answered": False,
+        "last_result": None,
+        "current_question": None,
+        "seen_indices": [],
+    }
+    for key, value in defaults.items():
+        if key not in st.session_state:
+            st.session_state[key] = value
+
+
+def choose_question():
+    if len(st.session_state.seen_indices) >= len(QUESTION_DATA):
+        st.session_state.seen_indices = []
+
+    available = [i for i in range(len(QUESTION_DATA)) if i not in st.session_state.seen_indices]
+    idx = random.choice(available)
+    st.session_state.seen_indices.append(idx)
+    st.session_state.current_question = QUESTION_DATA[idx]
+    st.session_state.answered = False
+    st.session_state.last_result = None
+    st.session_state.answer_text = ""
+
+
+init_state()
+
+
+if not st.session_state.started:
+    st.markdown("<h1 class='main-title'>TOEIC Paraphrase Trainer</h1>", unsafe_allow_html=True)
+    st.write("TOEIC600点を目指す学習者向けの、言い換え表現を探すトレーニングです。")
+    st.markdown(f"<p class='small-note'>現在利用できる問題数：{len(QUESTION_DATA)}問</p>", unsafe_allow_html=True)
+
+    current_score = st.number_input(
+        "現在のTOEICスコアを入力してください",
+        min_value=0,
+        max_value=990,
+        value=400,
+        step=10,
+    )
+
+    target_score = st.selectbox(
+        "目標スコアを選択してください",
+        [500, 600, 730, 860],
+        index=1,
+    )
+
+    if st.button("学習を開始する", type="primary"):
+        st.session_state.current_score = current_score
+        st.session_state.target_score = target_score
+        st.session_state.started = True
+        st.session_state.correct_count = 0
+        st.session_state.total_count = 0
+        st.session_state.seen_indices = []
+        choose_question()
+        st.rerun()
+
+    st.stop()
+
+
+if st.session_state.current_question is None:
+    choose_question()
+
+q = st.session_state.current_question
+
+st.markdown("<h1 class='main-title'>TOEIC Paraphrase Trainer</h1>", unsafe_allow_html=True)
+
+col1, col2, col3 = st.columns(3)
+col1.metric("現在スコア", f"{st.session_state.current_score}点")
+col2.metric("目標スコア", f"{st.session_state.target_score}点")
+col3.metric("正答数", f"{st.session_state.correct_count} / {st.session_state.total_count}")
+
+st.markdown("<div class='badge'>TOEIC600点を目指すレベル</div>", unsafe_allow_html=True)
+
+st.subheader(f"Target Word: {q['target_word']}")
+st.caption(f"テーマ：{q.get('theme', 'No theme')}")
+
+if st.session_state.current_score < 500 and not st.session_state.answered:
+    first_letter = q["paraphrased_word"][0]
+    st.info(
+        f"ヒント：本文中に「{first_letter}」から始まる、「{q['target_word']}」と似た意味の表現があります。"
+    )
+
+safe_passage = html.escape(q["passage"])
+st.markdown(f"<div class='toeic-passage-box'>{safe_passage}</div>", unsafe_allow_html=True)
+
+st.write("### Question")
+st.write(q["question"])
+
+answer = st.text_input(
+    "本文中の言い換え表現を入力してください",
+    key="answer_text",
+    disabled=st.session_state.answered,
+)
+
+col_a, col_b, col_c = st.columns([1.2, 1.2, 1])
+
+with col_a:
+    check_clicked = st.button("答え合わせ", disabled=st.session_state.answered, type="primary")
+
+with col_b:
+    next_clicked = st.button("次の問題へ")
+
+with col_c:
+    reset_clicked = st.button("最初に戻る")
+
+if check_clicked:
+    if not answer.strip():
+        st.warning("解答を入力してください。")
+    else:
+        st.session_state.total_count += 1
+        correct_answer = normalize_text(q["paraphrased_word"])
+        user_answer = normalize_text(answer)
+        is_correct = user_answer == correct_answer
+
+        if is_correct:
+            st.session_state.correct_count += 1
+
+        st.session_state.answered = True
+        st.session_state.last_result = is_correct
+        st.rerun()
+
+if next_clicked:
+    choose_question()
+    st.rerun()
+
+if reset_clicked:
+    for key in list(st.session_state.keys()):
+        del st.session_state[key]
+    st.rerun()
+
+if st.session_state.answered:
+    if st.session_state.last_result:
+        st.success("正解です！")
+    else:
+        st.error("不正解です。")
+
+    pattern, pattern_explanation = classify_paraphrase(q["target_word"], q["paraphrased_word"])
+
+    st.write(f"正解：**{q['paraphrased_word']}**")
+    st.markdown(
+        f"""
+        <div class='pattern-box'>
+        <strong>言い換えパターン：{html.escape(pattern)}</strong><br>
+        {html.escape(pattern_explanation)}
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    st.info(q["explanation"])
+
+st.markdown("---")
+st.caption("問題はランダムに表示されます。全問が一巡すると、再びランダム出題されます。")
