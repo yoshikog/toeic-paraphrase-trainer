@@ -134,12 +134,15 @@ if "answered" not in st.session_state:
 if "last_result" not in st.session_state:
     st.session_state.last_result = None
 
+if "question_id" not in st.session_state:
+    st.session_state.question_id = random.randint(100000, 999999)
+
 
 def choose_question():
     st.session_state.current_question = random.choice(QUESTION_DATA)
     st.session_state.answered = False
     st.session_state.last_result = None
-    st.session_state.answer_text = ""
+    st.session_state.question_id = random.randint(100000, 999999)
 
 
 if not st.session_state.started:
@@ -182,7 +185,10 @@ col1.metric("現在スコア", f"{st.session_state.current_score}点")
 col2.metric("目標スコア", f"{st.session_state.target_score}点")
 col3.metric("正答数", f"{st.session_state.correct_count} / {st.session_state.total_count}")
 
-st.markdown("<div class='badge'>TOEIC600点を目指すレベル</div>", unsafe_allow_html=True)
+st.markdown(
+    "<div class='badge'>TOEIC600点を目指すレベル</div>",
+    unsafe_allow_html=True
+)
 
 st.subheader(f"Target Word: {q['target_word']}")
 st.caption(f"テーマ：{q['theme']}")
@@ -205,7 +211,7 @@ st.write(q["question"])
 
 answer = st.text_input(
     "本文中の言い換え表現を入力してください",
-    key="answer_text",
+    key=f"answer_text_{st.session_state.question_id}",
     disabled=st.session_state.answered
 )
 
@@ -277,3 +283,4 @@ if st.session_state.answered:
 
 st.markdown("---")
 st.caption("問題はランダムに表示されます。")
+
